@@ -1,0 +1,68 @@
+import os
+import pandas as pd
+
+# Directory containing the temperature CSV files
+data_folder = 'F:/JU/MY_Project/HIT137/temperature_data'
+
+# Dictionary to store monthly temperatures
+temp_data = {month: [] for month in range(1, 13)}
+
+month_names = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+]
+
+# Check if the directory exists
+if not os.path.exists(data_folder):
+    print(f"Error: Directory '{data_folder}' does not exist.")
+    exit()
+
+# Iterate over all files in the directory
+for file_name in os.listdir(data_folder):
+    if file_name.endswith('.csv'):
+        file_path = os.path.join(data_folder, file_name)
+
+        df = pd.read_csv(file_path)
+
+        # Ensure the necessary columns exist
+        required_columns = {
+            "STATION_NAME", "STN_ID", "LAT", "LON",
+            "January", "February", "March", "April",
+            "May", "June", "July", "August",
+            "September", "October", "November", "December"
+        }
+        if not required_columns.issubset(df.columns):
+            print(f"Skipping file {file_name}: Missing required columns.")
+            continue
+
+        # Collect monthly temperatures
+        for month_idx, month_name in enumerate([
+            "January", "February", "March", "April",
+            "May", "June", "July", "August",
+            "September", "October", "November", "December"
+        ], start=1):
+            temp_data[month_idx].extend(df[month_name].dropna().tolist())
+
+
+
+# Calculate the average temperature for each month
+average_temperatures = {
+    month: (sum(temp_data[month]) / len(temp_data[month]) if temp_data[month] else None)
+    for month in range(1, 13)
+}
+
+# Save the results to a file
+output_file = 'F:/JU/MY_Project/HIT137/average_temp.txt'
+try:
+    with open(output_file, 'w') as f:
+        f.write("Month, Average Temperature\n")
+        for month, avg_temp in average_temperatures.items():
+            month_name = month_names[month - 1]  # Get the month name
+            if avg_temp is not None:
+                f.write(f"{month_name}, {avg_temp:.2f}\n")
+            else:
+                f.write(f"{month_name}, No Data\n")
+
+    print(f"Average temperatures for each month have been saved to '{output_file}'.")
+except Exception as e:
+    print(f"Error writing to output file: {e}")
