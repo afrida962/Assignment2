@@ -1,0 +1,116 @@
+
+
+###This function works for Encryption
+
+def encrypt_text(input_file, output_file, n, m):
+    def transform_char_encrypt(char):
+        # For lowercase letters
+        if char.islower():
+            if char <= 'm':
+                shift = n * m  # Positive shift for first half of alphabet
+                return chr((ord(char) - ord('a') + shift) % 13 + ord('a'))
+            else:
+                shift = -(n + m)  # Negative shift for second half
+                return chr((ord(char) - ord('n') + shift) % 13 + ord('n'))
+
+        # For uppercase letters
+        elif char.isupper():
+            if char <= 'M':
+                shift = -n  # Negative shift for first half of uppercase letters
+                return chr((ord(char) - ord('A') + shift) % 13 + ord('A'))
+            else:
+                shift = m ** 2  # Positive shift for second half
+            return chr((ord(char) - ord('N') + shift) % 13 + ord('N'))
+
+        # For non-alphabetic characters (keep them unchanged)
+        else:
+            return char
+
+    with open(input_file, 'r') as file:
+        text = file.read()
+
+    encrypted_text = ''.join(transform_char_encrypt(char) for char in text)
+
+    with open(output_file, 'w') as file:
+        file.write(encrypted_text)
+
+
+
+
+###This function works for decryption
+
+def decrypt_text(input_file, output_file, n, m):
+    def transform_char_decrypt(char):
+        if char.islower():
+            if char <= 'm':
+                shift = n * m  # Positive shift for first half of alphabet
+                return chr((ord(char) - ord('a') - shift) % 13 + ord('a'))
+            else:
+                shift = -(n + m)  # Negative shift for second half
+                return chr((ord(char) - ord('n') - shift) % 13 + ord('n'))
+
+        # For uppercase letters
+        elif char.isupper():
+            if char <= 'M':
+                shift = -n  # Negative shift for first half of uppercase letters
+                return chr((ord(char) - ord('A') - shift) % 13 + ord('A'))
+            else:
+                shift = m ** 2  # Positive shift for second half
+            return chr((ord(char) - ord('N') - shift) % 13 + ord('N'))
+
+        else:
+            return char
+
+    with open(input_file, 'r') as file:
+        encrypted_text = file.read()
+
+    decrypted_text = ''.join(transform_char_decrypt(char) for char in encrypted_text)
+
+    with open(output_file, 'w') as file:
+        file.write(decrypted_text)
+
+
+## This file is for checking two files
+def check_decryption(original_file, decrypted_file):
+    with open(original_file, 'r') as file:
+        original_text = file.read()
+
+    with open(decrypted_file, 'r') as file:
+        decrypted_text = file.read()
+
+    for i, (orig_char, decrypt_char) in enumerate(zip(original_text, decrypted_text)):
+        if orig_char != decrypt_char:
+            print(f"Mismatch at position {i}: '{orig_char}' != '{decrypt_char}'")
+
+    return original_text == decrypted_text
+
+
+if __name__ == "__main__":
+    # Prompt the user for values of n and m
+    n = int(input("Enter the value of n: "))
+    m = int(input("Enter the value of m: "))
+
+
+    # File paths
+    input_file = "F:/JU/MY_Project/HIT137/raw_text.txt"
+    encrypted_file = "F:/JU/MY_Project/HIT137/encrypted_text.txt"
+    decrypted_file = "F:/JU/MY_Project/HIT137/decrypted_text.txt"
+
+    # Encrypt and decrypt
+    encrypt_text(input_file, encrypted_file, n, m)
+    decrypt_text(encrypted_file, decrypted_file, n, m)
+
+    # Verify decryption
+    if check_decryption(input_file, decrypted_file):
+        print("Decryption is correct!")
+    else:
+        print("Decryption failed!")
+
+    with open(input_file, 'r', encoding='utf-8') as input_file:
+        print(f"Original: {input_file.read()}")
+
+    with open(encrypted_file, 'r', encoding='utf-8') as encrypted_file:
+        print(f"Encrypted: {encrypted_file.read()}")
+
+    with open(decrypted_file, 'r', encoding='utf-8') as decrypted_file:
+        print(f"Decrypted: {decrypted_file.read()}")
