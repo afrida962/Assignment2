@@ -1,0 +1,96 @@
+import turtle
+import tkinter as tk
+
+
+def draw_tree(t, branch_len, left_angle, right_angle, reduction_factor, depth):
+    """
+    Recursively draws a tree pattern using turtle graphics
+
+    Parameters:
+    t: turtle object
+    branch_len: length of the current branch
+    left_angle: angle for left branches
+    right_angle: angle for right branches
+    reduction_factor: factor to reduce branch length (between 0 and 1)
+    depth: remaining recursion depth
+    """
+    if depth == 0:
+        return
+
+    # Save current state
+    x, y = t.position()
+    heading = t.heading()
+
+    # Draw current branch (trunk)
+    t.forward(branch_len)
+
+    # Draw right branch
+    t.right(right_angle)
+    draw_tree(t, branch_len * reduction_factor, left_angle, right_angle,
+              reduction_factor, depth - 1)
+
+    # Return to position before right branch
+    t.penup()
+    t.goto(x, y)
+    t.setheading(heading)
+    t.pendown()
+
+    # Move to end of current branch
+    t.forward(branch_len)
+
+    # Draw left branch
+    t.left(left_angle)
+    draw_tree(t, branch_len * reduction_factor, left_angle, right_angle,
+              reduction_factor, depth - 1)
+
+    # Return to starting position
+    t.penup()
+    t.goto(x, y)
+    t.setheading(heading)
+    t.pendown()
+
+
+def setup_turtle():
+    """Sets up the turtle with initial parameters"""
+    screen = turtle.Screen()
+    screen.title("Recursive Tree")
+
+    t = turtle.Turtle()
+    t.speed(0)  # Fastest speed
+    t.left(90)  # Point turtle upward
+    t.pensize(2)
+
+    # Set color gradient (optional)
+    t.color("brown", "green")
+
+    return t, screen
+
+
+def main():
+    # Get parameters from user (you can modify these values)
+    left_angle = 20
+    right_angle = 25
+    start_len = 100
+    depth = 5
+    reduction = 0.7
+
+    # Setup turtle
+    t, screen = setup_turtle()
+
+    # Position turtle at bottom of screen
+    t.penup()
+    t.goto(0, -200)
+    t.pendown()
+
+    # Draw the tree
+    draw_tree(t, start_len, left_angle, right_angle, reduction, depth)
+
+    # Hide turtle when done
+    t.hideturtle()
+
+    # Keep window open until clicked
+    screen.exitonclick()
+
+
+if __name__ == "__main__":
+    main()
