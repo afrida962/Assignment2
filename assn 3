@@ -15,6 +15,7 @@ class CustomImageEditor:
         self.crop_rectangle = None
         self.crop_start_x = None
         self.crop_start_y = None
+        self.undo_stack = []  # Stack to store previous states of the edited image
 
         # Create main frames
         self.main_frame = tk.Frame(master)
@@ -46,6 +47,9 @@ class CustomImageEditor:
         self.save_btn = tk.Button(self.control_frame, text="Save", command=self.save_image, bg="green", fg="white")
         self.save_btn.pack(side=tk.LEFT, padx=5, pady=5)
 
+        self.undo_btn = tk.Button(self.control_frame, text="Undo", command=self.undo, bg="orange", fg="white")
+        self.undo_btn.pack(side=tk.LEFT, padx=5, pady=5)
+
         # Bind mouse events for cropping
         self.original_canvas.bind("<ButtonPress-1>", self.start_crop)
         self.original_canvas.bind("<B1-Motion>", self.update_crop)
@@ -55,7 +59,11 @@ class CustomImageEditor:
         file_path = filedialog.askopenfilename()
         if file_path:
             self.original_img = cv2.imread(file_path)
+            self.edited_img = self.original_img.copy()  # Initialize edited_img with the original image
+            self.undo_stack = []  # Clear the undo stack when a new image is loaded
             self.show_image(self.original_img, self.original_canvas, "original")
+            self.show_image(self.edited_img, self.edited_canvas, "edited")
+            self.reset_cursor()  # Reset the cursor after loading a new image
 
     def show_image(self, image, canvas, canvas_type):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -108,6 +116,9 @@ class CustomImageEditor:
             x2 = max(0, min(x2, self.original_img.shape[1]))
             y2 = max(0, min(y2, self.original_img.shape[0]))
 
+            # Push the current state to the undo stack
+            self.undo_stack.append(self.edited_img.copy())
+
             # Crop the image
             self.edited_img = self.original_img[y1:y2, x1:x2]
             self.show_image(self.edited_img, self.edited_canvas, "edited")
@@ -118,17 +129,31 @@ class CustomImageEditor:
 
     def adjust_size(self, value):
         if self.edited_img is not None:
+            # Push the current state to the undo stack
+            self.undo_stack.append(self.edited_img.copy())
+
             scale_factor = int(value) / 100
             width = int(self.edited_img.shape[1] * scale_factor)
             height = int(self.edited_img.shape[0] * scale_factor)
             resized_img = cv2.resize(self.edited_img, (width, height))
-            self.show_image(resized_img, self.edited_canvas, "edited")
+            self.edited_img = resized_img
+            self.show_image(self.edited_img, self.edited_canvas, "edited")
 
     def save_image(self):
         if self.edited_img is not None:
             file_path = filedialog.asksaveasfilename(defaultextension=".png")
             if file_path:
                 cv2.imwrite(file_path, self.edited_img)
+
+    def undo(self):
+        if self.undo_stack:
+            # Pop the last state from the stack
+            self.edited_img = self.undo_stack.pop()
+            self.show_image(self.edited_img, self.edited_canvas, "edited")
+
+    def reset_cursor(self):
+        # Reset the cursor to "cross" after loading a new image
+        self.original_canvas.config(cursor="cross")
 
 if __name__ == "__main__":
     root = tk.Tk()
