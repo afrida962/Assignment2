@@ -127,17 +127,14 @@ class CustomImageEditor:
         # This method is now handled by mouse events
         pass
 
+
     def adjust_size(self, value):
         if self.edited_img is not None:
-            # Push the current state to the undo stack
-            self.undo_stack.append(self.edited_img.copy())
-
             scale_factor = int(value) / 100
             width = int(self.edited_img.shape[1] * scale_factor)
             height = int(self.edited_img.shape[0] * scale_factor)
             resized_img = cv2.resize(self.edited_img, (width, height))
-            self.edited_img = resized_img
-            self.show_image(self.edited_img, self.edited_canvas, "edited")
+            self.show_image(resized_img, self.edited_canvas, "edited")
 
     def save_image(self):
         if self.edited_img is not None:
